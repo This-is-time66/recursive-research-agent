@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursive Research Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- ─── AUTH SCREEN ──────────────────────────────────────────────────────── -->
+<div id="authScreen">
+    <div class="auth-card">
+        <div style="text-align:center; margin-bottom:28px;">
+            <div style="font-size:2rem; margin-bottom:8px;">🔬</div>
+            <h1 style="font-size:1.6rem; font-weight:700; color:#1e293b; margin:0 0 6px;">Research Agent</h1>
+            <p style="color:#94a3b8; font-size:0.9rem; margin:0;">AI-powered deep research, saved to your account</p>
+        </div>
+        <div style="display:flex; gap:6px; background:#f1f5f9; padding:4px; border-radius:12px; margin-bottom:28px;">
+            <div class="auth-tab active" id="loginTab" onclick="switchTab('login')" style="flex:1;text-align:center;">Login</div>
+            <div class="auth-tab" id="signupTab" onclick="switchTab('signup')" style="flex:1;text-align:center;">Sign Up</div>
+        </div>
+        <div class="error-msg" id="authError"></div>
+        <div style="display:flex; flex-direction:column; gap:14px; margin-top:6px;">
+            <div>
+                <label style="font-size:0.82rem; font-weight:600; color:#475569; display:block; margin-bottom:6px;">Email Address</label>
+                <input type="email" id="authEmail" class="auth-input" placeholder="you@email.com" onkeydown="if(event.key==='Enter') submitAuth()">
+            </div>
+            <div>
+                <label style="font-size:0.82rem; font-weight:600; color:#475569; display:block; margin-bottom:6px;">Password</label>
+                <input type="password" id="authPassword" class="auth-input" placeholder="Min. 6 characters" onkeydown="if(event.key==='Enter') submitAuth()">
+            </div>
+            <button class="auth-btn" id="authBtn" onclick="submitAuth()">Login</button>
+        </div>
+        <p style="text-align:center; font-size:0.8rem; color:#94a3b8; margin-top:20px; margin-bottom:0;">
+            <span id="switchText">Don't have an account?</span>
+            <span onclick="switchTab(currentTab==='login'?'signup':'login')" style="color:#3b82f6; font-weight:600; cursor:pointer; margin-left:4px;" id="switchLink">Sign up free</span>
+        </p>
+    </div>
+</div>
+
+<!-- ─── APP SCREEN ───────────────────────────────────────────────────────── -->
+<div id="appScreen">
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="header-logo">Research<span>Agent</span></div>
+            <button class="new-search-btn" onclick="newSearch()">
+                <span style="font-size:1.1rem; font-weight:400; line-height:1;">＋</span> New Search
+            </button>
+        </div>
+        <div class="user-badge">
+            <button class="account-btn" onclick="openAccountPanel()">
+                <div class="account-avatar" id="headerAvatar">?</div>
+                <span id="userEmailDisplay"></span>
+            </button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">📂 Search History</div>
+            <div class="sidebar-list" id="historyList">
+                <div class="no-history">No research yet.<br>Start your first search!</div>
+            </div>
+        </div>
+
+        <!-- Main -->
+        <div class="main-content">
+            <div class="search-bar">
+                <input type="text" id="topicInput" class="topic-input" placeholder="Enter a  topic to research..."
+                       onkeydown="if(event.key==='Enter') startResearch()">
+                <button class="research-btn" id="researchBtn" onclick="startResearch()">Research</button>
+            </div>
+
+            <div id="thinkingContainer" style="display:none;">
+                <div class="thinking-card">
+                    <div class="thinking-header">
+                        <div class="loader" id="logLoader"></div>
+                        <span class="log-label">Agent Thinking Log</span>
+                    </div>
+                    <div id="logBody" class="mono"></div>
+                </div>
+            </div>
+
+            <div id="reportContainer" style="display:none;">
+                <div class="report-section">
+                    <div class="report-title">Research Report</div>
+                    <div id="reportTopicTag" class="report-topic-tag"></div>
+                    <div id="reportContent" class="report-body"></div>
+                </div>
+            </div>
+
+            <div id="welcomeState" class="welcome-empty">
+                <div class="welcome-icon">🔍</div>
+                <h2>What do you want to research?</h2>
+                <p style="font-size:0.9rem;">Type any topic above and the AI agent will generate a detailed, annotated research report — saved to your history automatically.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── ACCOUNT PANEL ────────────────────────────────────────────────────── -->
+<div class="panel-overlay" id="panelOverlay" onclick="closeAccountPanel()"></div>
+<div class="account-panel" id="accountPanel">
+    <div class="panel-header">
+        <span class="panel-title">👤 My Account</span>
+        <button class="panel-close" onclick="closeAccountPanel()">✕</button>
+    </div>
+    <div class="panel-body">
+        <div class="panel-avatar-row">
+            <div class="panel-avatar" id="panelAvatar">?</div>
+            <div>
+                <div class="panel-email-label">Email Address</div>
+                <div class="panel-email-val" id="panelEmail">—</div>
+            </div>
+        </div>
+        <div class="panel-info-row">
+            <span class="panel-info-key">📄 Total Researches</span>
+            <span class="panel-info-val" id="panelResearchCount">—</span>
+        </div>
+        <div class="danger-zone">
+            <div class="danger-title">⚠ Danger Zone</div>
+            <div class="danger-desc">
+                Permanently deletes your account, all research history, and every piece of data linked to you.
+                <strong>This cannot be undone.</strong>
+            </div>
+            <button class="delete-account-btn" id="deleteAccountBtn" onclick="deleteAccount()">
+                🗑&nbsp; Delete My Account
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/script.js"></script>
+</body>
+</html>
